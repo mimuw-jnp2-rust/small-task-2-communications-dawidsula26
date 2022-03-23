@@ -123,18 +123,14 @@ impl Client {
     // the `Open` status.
     #[allow(dead_code)]
     fn is_open(&self, addr: &str) -> bool {
-        if let Some(Connection::Open(_)) = self.connections.get(addr) {
-            true
-        } else {
-            false
-        }
+        matches!(self.connections.get(addr), Some(Connection::Open(_)))
     }
 
     // Returns the number of closed connections
     #[allow(dead_code)]
     fn count_closed(&self) -> usize {
         self.connections.values().filter(
-            |x| if let Connection::Closed = x {true} else {false}
+            |x| matches!(x, Connection::Closed)
         ).count()
     }
 }
@@ -157,7 +153,7 @@ struct Server {
 
 impl Server {
     fn new(name: String, limit: u32) -> Server {
-        Server {name: name, post_count: 0, limit: limit, connected_client: None}
+        Server {name, post_count: 0, limit, connected_client: None}
     }
 
     // Consumes the message.
@@ -173,7 +169,7 @@ impl Server {
                 if self.connected_client != None {
                     CommsResult::Err(CommsError::UnexpectedHandshake(self.name.clone()))
                 } else {
-                    self.connected_client = Some(ip.clone());
+                    self.connected_client = Some(ip);
                     CommsResult::Ok(Response::HandshakeReceived)
                 }
             }
